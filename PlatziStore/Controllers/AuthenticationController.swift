@@ -9,4 +9,18 @@ struct AuthenticationController {
         
         return registrationResponse
     }
+    
+    func login(email: String, password: String) async throws -> Bool {
+        
+        let loginResponse = try await httpClient.login(email: email, password: password)
+        
+        print(loginResponse.accessToken)
+        print(loginResponse.refreshToken)
+        
+        // Save the access and refresh token in Keychain
+        Keychain.set(loginResponse.accessToken, forKey: "accessToken")
+        Keychain.set(loginResponse.refreshToken, forKey: "refreshToken")
+
+        return true
+    }
 }
