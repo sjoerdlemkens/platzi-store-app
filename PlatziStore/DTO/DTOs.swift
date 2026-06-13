@@ -29,5 +29,8 @@ struct LoginResponse: Codable {
         case accessToken = "access_token"
         case refreshToken = "refresh_token"
     }
-    
+}
+
+struct ErrorResponse: Codable {
+    let message: String?
 }

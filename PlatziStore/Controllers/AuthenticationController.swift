@@ -1,26 +1,32 @@
 import Foundation
 
 struct AuthenticationController {
+    
     // If mocking then use HTTPClientProtocol
     let httpClient: HTTPClient
     
     func register(name: String, email: String, password: String) async throws -> RegistrationResponse {
-        let registrationResponse =  try await httpClient.register(name: name, email: email, password: password, avatar: URL(string: "https://picsum.photos/800")!)
         
-        return registrationResponse
+        let request = RegistrationRequest(name: name, email: email, password: password, avatar: URL(string: "https://picsum.photos/800")!)
+        let resource = Resource(url: Constants.Urls.register, method: .post(try request.encode()), modelType: RegistrationResponse.self)
+        let response = try await httpClient.load(resource)
+        return response
     }
     
     func login(email: String, password: String) async throws -> Bool {
         
-        let loginResponse = try await httpClient.login(email: email, password: password)
+        let request = LoginRequest(email: email, password: password)
+        let resource = Resource(url: Constants.Urls.login, method: .post(try request.encode()), modelType: LoginResponse.self)
+        let response = try await httpClient.load(resource)
         
-        print(loginResponse.accessToken)
-        print(loginResponse.refreshToken)
+        print(response.accessToken)
+        print(response.refreshToken)
         
-        // Save the access and refresh token in Keychain
-        Keychain.set(loginResponse.accessToken, forKey: "accessToken")
-        Keychain.set(loginResponse.refreshToken, forKey: "refreshToken")
-
+        // save the access and refresh token in Keychain
+        Keychain.set(response.accessToken, forKey: "accessToken")
+        Keychain.set(response.refreshToken, forKey: "refreshToken")
+        
         return true
     }
+    
 }

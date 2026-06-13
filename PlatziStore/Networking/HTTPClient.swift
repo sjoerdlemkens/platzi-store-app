@@ -1,31 +1,100 @@
 import Foundation
 
-struct HTTPClient {
+enum HTTPMethod {
+    case get([URLQueryItem])
+    case post(Data?)
+    case delete
+    case put(Data?)
     
-    func register(name: String, email: String, password: String, avatar: URL) async throws -> RegistrationResponse {
-        let registrationRequest = RegistrationRequest(name: name, email: email, password: password, avatar: URL(string: "https://picsum.photos/800")!)
-        
-        var request = URLRequest(url: Constants.Urls.register)
-        request.httpMethod = "POST"
-        request.httpBody = try JSONEncoder().encode(registrationRequest)
-        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        
-        let (data, _) =  try await URLSession.shared.data(for: request)
-        let registrationResponse  = try JSONDecoder().decode(RegistrationResponse.self, from: data)
-        return registrationResponse
+    var name: String {
+        switch self {
+        case .get:
+            return "GET"
+        case .post:
+            return "POST"
+        case .delete:
+            return "DELETE"
+        case .put:
+            return "PUT"
+        }
+    }
+}
+
+struct Resource<T: Codable> {
+    let url: URL
+    var method: HTTPMethod = .get([])
+    var headers: [String: String]? = nil
+    var modelType: T.Type
+    
+}
+
+struct HTTPClient {
+    private let session: URLSession
+    
+    init() {
+        let configuration = URLSessionConfiguration.default
+        configuration.httpAdditionalHeaders = ["Content-Type": "application/json"]
+        self.session = URLSession(configuration: configuration)
     }
     
-    func login (email: String, password: String) async throws -> LoginResponse {
-        let loginRequest = LoginRequest(email: email, password: password)
+    func load<T: Codable>(_ resource: Resource<T>) async throws -> T {
+        do {
+            return try await performRequest(resource)
+        } catch {
+            throw NetworkError.invalidResponse
+        }
+    }
+    
+    private func performRequest<T: Codable>(_ resource: Resource<T>) async throws -> T {
+        var request = URLRequest(url: resource.url)
         
-        var request = URLRequest(url: Constants.Urls.login)
-        request.httpMethod = "POST"
-        request.httpBody = try JSONEncoder().encode(loginRequest)
-        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        switch resource.method {
+        case .get(let queryItems):
+            var components = URLComponents(url: resource.url, resolvingAgainstBaseURL: false)
+            components?.queryItems = queryItems
+            guard let url = components?.url else {
+                throw NetworkError.badRequest
+            }
+            request.url = url
+        case .post(let data), .put(let data):
+            request .httpMethod = resource.method.name
+            request.httpBody = data
+        case .delete:
+            request .httpMethod = resource.method.name
+        }
         
-        let (data, _) = try await URLSession.shared.data(for: request)
-        let loginResponse = try JSONDecoder().decode(LoginResponse.self, from: data)
+        // Add authorization header // accessToken
+        if let token = Keychain<String>.get("accessToken") {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
         
-        return loginResponse
+        if let headers = resource.headers {
+            for (key,value) in headers {
+                request.setValue(value, forHTTPHeaderField: key)
+            }
+        }
+        
+        let (data, response) = try await session.data(for: request)
+        
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw NetworkError.invalidResponse
+        }
+        
+        switch httpResponse.statusCode {
+        case 200..<300:
+            break
+        case 401:
+            throw NetworkError.unauthorized
+        case 404:
+            throw NetworkError.notFound
+        default:
+            throw NetworkError.undefined(data, httpResponse)
+        }
+        
+        do {
+            return try JSONDecoder().decode(resource.modelType, from: data)
+        } catch {
+            throw NetworkError.decodingError(error)
+        }
     }
 }
