@@ -41,18 +41,27 @@ struct LoginResponse: Codable {
     }
 }
 
-struct ErrorResponse: Codable {
+nonisolated struct ErrorResponse: Codable {
     let message: String?
 }
 
-struct Category: Identifiable, Codable {
+nonisolated struct Product: Identifiable, Codable {
+    let id: Int
+    let title: String
+    let price: Double
+    let description: String
+    let images: [URL]
+    let category: Category
+}
+
+nonisolated struct Category: Identifiable, Codable {
     let id: Int
     let name: String
     let image: URL
 }
 
-
 struct CreateCategoryRequest: Codable {
     let name: String
     let image: URL
 }
+

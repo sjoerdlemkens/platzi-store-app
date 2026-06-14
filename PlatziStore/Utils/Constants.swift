@@ -7,5 +7,9 @@ struct Constants {
         static let refreshToken = URL(string: "https://api.escuelajs.co/api/v1/auth/refresh")!
         static let categories = URL(string: "https://api.escuelajs.co/api/v1/categories")!
         static let createCategory = URL(string: "https://api.escuelajs.co/api/v1/categories/")!
+        
+        static func getProductsByCategory(_ categoryId: Int) -> URL {
+            URL(string: "https://api.escuelajs.co/api/v1/categories/\(categoryId)/products")!
+        }
     }
 }

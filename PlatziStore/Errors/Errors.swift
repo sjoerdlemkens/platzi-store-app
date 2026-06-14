@@ -11,7 +11,6 @@ enum NetworkError: Error {
 
 extension NetworkError: LocalizedError {
     
-    @MainActor
     var errorDescription: String? {
         switch self {
             case .badRequest:
@@ -34,4 +33,3 @@ extension NetworkError: LocalizedError {
             }
         }
 }
-

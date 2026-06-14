@@ -22,7 +22,11 @@ struct CategoryListScreen: View {
                 ContentUnavailableView("No products availalbe", systemImage: "shippingbox")
             } else {
                 List(store.categories) { category in
-                    CategoryCellView(category: category)
+                    NavigationLink {
+                       ProductListScreen(category: category)
+                    } label: {
+                        CategoryCellView(category: category)
+                    }
                 }
             }
         }
