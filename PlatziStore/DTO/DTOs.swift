@@ -51,7 +51,22 @@ nonisolated struct Product: Identifiable, Codable {
     let price: Double
     let description: String
     let images: [URL]
-    let category: Category
+}
+
+extension Product {
+    static var preview: Product {
+        Product(
+            id: 1,
+            title: "Handmade Fresh Table",
+            price: 687.0,
+            description: "Andy shoes are designed to keep in comfort and style. Perfect for your next dinner party or client meeting.",
+            images: [
+                URL(string: "https://i.imgur.com/qNOjJje.jpeg")!,
+                URL(string: "https://i.imgur.com/qNOjJje.jpeg")!,
+                URL(string: "https://i.imgur.com/qNOjJje.jpeg")!
+            ]
+        )
+    }
 }
 
 nonisolated struct Category: Identifiable, Codable {

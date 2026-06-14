@@ -22,10 +22,14 @@ struct ProductListScreen: View {
     var body: some View {
         ZStack {
             if products.isEmpty && !isLoading {
-                ContentUnavailableView("No products availalbe", systemImage: "shippingbox")
+                ContentUnavailableView("No products available", systemImage: "shippingbox")
             } else {
                 List(products) { product in
-                    ProductCellView(product: product)
+                    NavigationLink {
+                        ProductDetailScreen(product: product )
+                    } label: {
+                        ProductCellView(product: product)
+                    }
                 }.refreshable {
                     await loadProducts()
                 }
