@@ -17,6 +17,7 @@ struct PlatziStoreApp: App {
                         }
                 } else if isAuthenticated {
                     HomeScreen()
+                        .environment(PlatziStore(httpClient: HTTPClient()))
                 } else {
                     VStack {
                         RegistrationScreen()
