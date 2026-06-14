@@ -40,8 +40,14 @@ struct HTTPClient {
     func load<T: Codable>(_ resource: Resource<T>) async throws -> T {
         do {
             return try await performRequest(resource)
-        } catch {
-            throw NetworkError.invalidResponse
+        } catch NetworkError.unauthorized {
+            // Attempt to refresh the token
+            do {
+                try await refreshToken()
+                return try await performRequest(resource)
+            } catch {
+                throw NetworkError.unauthorized
+            }
         }
     }
     
@@ -96,5 +102,19 @@ struct HTTPClient {
         } catch {
             throw NetworkError.decodingError(error)
         }
+    }
+    
+    private func refreshToken() async throws {
+        guard let refreshToken = Keychain<String>.get("refreshToken") else {
+            throw NetworkError.unauthorized
+        }
+        
+        let body = try JSONEncoder().encode(["refreshToken": refreshToken])
+        let resource = Resource(url: Constants.Urls.refreshToken, method: .post(body),modelType: RefreshTokenResponse.self )
+        
+        let response = try await performRequest(resource)
+        
+        Keychain.set(response.accessToken, forKey: "accessToken")
+        Keychain.set(response.refreshToken, forKey: "refreshToken")
     }
 }
