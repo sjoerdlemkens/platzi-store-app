@@ -5,6 +5,30 @@ struct AuthenticationController {
     // If mocking then use HTTPClientProtocol
     let httpClient: HTTPClient
     
+    func checkAuthentication() async -> Bool {
+        guard let accessToken: String = Keychain.get("accessToken") else  {
+            return false
+        }
+        
+        // Check if access token is expired
+        if JWTDecoder.isExpired(token: accessToken) {
+            do {
+                try await httpClient.refreshToken()
+                return true
+            } catch {
+                return false
+            }
+        }
+        
+        return true
+    }
+    
+    func signOut() {
+        UserDefaults.standard.removeObject(forKey: "isAuthenticated")
+        let _ = Keychain<String>.delete("accessToken")
+        let _ = Keychain<String>.delete("refreshToken")
+    }
+    
     func register(name: String, email: String, password: String) async throws -> RegistrationResponse {
         
         let request = RegistrationRequest(name: name, email: email, password: password, avatar: URL(string: "https://picsum.photos/800")!)

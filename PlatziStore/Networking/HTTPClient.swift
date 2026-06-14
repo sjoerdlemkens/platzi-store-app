@@ -104,7 +104,7 @@ struct HTTPClient {
         }
     }
     
-    private func refreshToken() async throws {
+    func refreshToken() async throws {
         guard let refreshToken = Keychain<String>.get("refreshToken") else {
             throw NetworkError.unauthorized
         }
