@@ -13,7 +13,7 @@ struct HomeScreen: View {
             
             Tab {
                 NavigationStack {
-                    Text("Locations")
+                    LocationsScreen()
                 }
             } label: {
                 Label("Locations", systemImage: "map")

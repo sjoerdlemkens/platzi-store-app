@@ -5,6 +5,7 @@ struct LocationsScreen: View {
     
     @State private var cameraPosition = MapCameraPosition.region(.defaultRegion)
     @Environment(PlatziStore.self) private var store
+    @State private var selectedLocation: Location?
     
     private func regionThatFits(_ coordinates: [CLLocationCoordinate2D]) -> MKCoordinateRegion? {
         guard !coordinates.isEmpty else { return nil }
@@ -18,16 +19,27 @@ struct LocationsScreen: View {
         return MKCoordinateRegion(mapRect)
     }
     
-    
     var body: some View {
         Map(position: $cameraPosition) {
             ForEach(store.locations) { location in
                 Annotation(location.name, coordinate: location.coordinate) {
                     Image(systemName: "mappin.circle.fill")
+                        .font(selectedLocation?.id == location.id ? .largeTitle : .title)
+                        .foregroundStyle(selectedLocation?.id == location.id ? .blue: .red)
+                        .scaleEffect(selectedLocation?.id == location.id ? 1.5 : 1.0 )
+                        .animation(.spring(response: 0.3, dampingFraction: 0.6), value: selectedLocation?.id)
                         .foregroundStyle(.purple)
                         .font(.title)
+                        .onTapGesture {
+                            selectedLocation = location
+                        }
                 }
             }
+        }
+        .sheet(item: $selectedLocation) { location in
+            LocationDetailScreen(location: location)
+                .presentationDetents([.medium])
+            
         }
             .task {
                 do {
