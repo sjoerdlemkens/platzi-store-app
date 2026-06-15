@@ -5,6 +5,7 @@ import Foundation
 class PlatziStore {
     let httpClient: HTTPClient
     var categories: [Category] = []
+    var locations: [Location] = []
     
     init(httpClient: HTTPClient) {
         self.httpClient = httpClient
@@ -50,5 +51,10 @@ class PlatziStore {
     func deleteProduct(_ productId: Int) async throws -> Bool {
         let resource = Resource(url: Constants.Urls.deleteProduct(productId), method: .delete, modelType: Bool.self)
         return try await httpClient.load(resource)
+    }
+    
+    func loadLocations() async throws {
+        let resource = Resource(url: Constants.Urls.locations, modelType: [Location].self)
+        locations = try await httpClient.load(resource)
     }
 }
