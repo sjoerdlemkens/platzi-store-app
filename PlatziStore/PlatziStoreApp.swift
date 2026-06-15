@@ -19,8 +19,7 @@ struct PlatziStoreApp: App {
                     HomeScreen()
                         .environment(PlatziStore(httpClient: HTTPClient()))
                 } else {
-                    VStack {
-                        RegistrationScreen()
+                    NavigationStack {
                         LoginScreen()
                     }
                 }

@@ -47,7 +47,17 @@ struct LoginScreen: View {
                 .disabled(!isFormValid)
                 .listRowBackground(Color.clear)
             }
+
+            Section {
+                NavigationLink(destination: RegistrationScreen()) {
+                    Text("Don't have an account? Register")
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .foregroundColor(.blue)
+                }
+                .listRowBackground(Color.clear)
+            }
         }
+        .navigationTitle("Login")
     }
 }
 
