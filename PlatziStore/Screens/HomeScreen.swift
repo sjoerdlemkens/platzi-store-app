@@ -21,7 +21,7 @@ struct HomeScreen: View {
             
             Tab {
                 NavigationStack {
-                    Text("Profile")
+                    ProfileScreen()
                 }
             } label: {
                 Label("Profile", systemImage: "person.crop.circle")
