@@ -20,16 +20,34 @@ struct ProductListScreen: View {
         }
     }
     
+    private func deleteProduct(_ indexSet: IndexSet) {
+        indexSet.forEach { index in
+            let product = products[index]
+            Task {
+                let isDeleted = try await store.deleteProduct(product.id)
+                
+                if isDeleted {
+                    products.remove(atOffsets: indexSet)
+                }
+            }
+        }
+    }
+    
     var body: some View {
         ZStack {
             if products.isEmpty && !isLoading {
                 ContentUnavailableView("No products available", systemImage: "shippingbox")
             } else {
-                List(products) { product in
-                    NavigationLink {
-                        ProductDetailScreen(product: product )
-                    } label: {
-                        ProductCellView(product: product)
+                List {
+                    ForEach(products) { product in
+                        NavigationLink {
+                            ProductDetailScreen(product: product )
+                        } label: {
+                            ProductCellView(product: product)
+                        }
+                        
+                    }.onDelete { indexSet in
+                        deleteProduct(indexSet)
                     }
                 }.refreshable {
                     await loadProducts()
